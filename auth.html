@@ -10,39 +10,41 @@
   <div id="vk-auth-button"></div>
 
   <script>
-    const vkid = window.VKIDSDK || VKID;
+    window.onload = function () {
+      const vkid = window.VKIDSDK || window.VKID;
 
-    const codeVerifier = generateRandomString(128);
-    localStorage.setItem('code_verifier', codeVerifier);
+      const codeVerifier = generateRandomString(128);
+      localStorage.setItem('code_verifier', codeVerifier);
 
-    vkid.Config.set({
-      app: 53635176,
-      redirectUrl: 'https://vk.researcher123.space/auth.html',
-      scope: 'video,offline'
-    });
+      vkid.Config.set({
+        app: 53635176, // Твой ID VK-приложения
+        redirectUrl: 'https://vk.researcher123.space/auth.html',
+        scope: 'video,offline'
+      });
 
-    vkid.ButtonOneTap.render({
-      container: '#vk-auth-button',
-      callback: (event) => {
-        if (event.type === 'AUTH_SUCCESS') {
-          if (event.data.code) {
-            alert("Получен код авторизации: " + event.data.code);
-            console.log("Код авторизации:", event.data.code);
+      vkid.ButtonOneTap.render({
+        container: '#vk-auth-button',
+        callback: (event) => {
+          if (event.type === 'AUTH_SUCCESS') {
+            if (event.data.code) {
+              alert("Получен код авторизации: " + event.data.code);
+              console.log("Код авторизации:", event.data.code);
+            }
+          } else if (event.type === 'AUTH_ERROR') {
+            alert("Ошибка авторизации: " + event.data.error);
           }
-        } else if (event.type === 'AUTH_ERROR') {
-          alert("Ошибка авторизации: " + event.data.error);
         }
-      }
-    });
+      });
 
-    function generateRandomString(length) {
-      const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-      let text = '';
-      for (let i = 0; i < length; i++) {
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
+      function generateRandomString(length) {
+        const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+        let text = '';
+        for (let i = 0; i < length; i++) {
+          text += possible.charAt(Math.floor(Math.random() * possible.length));
+        }
+        return text;
       }
-      return text;
-    }
+    };
   </script>
 </body>
 </html>
