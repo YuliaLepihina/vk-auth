@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Авторизация через VK ID</title>
+  <script type="text/javascript" src="/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=oF1NF37RB2FbpBoM6MjHvhfKLynO9AyH_569jeoR6Vs11lZLhWouEBaodX_EjBkWf1Xd_ycGHQpjcp9RI3XyBqgDhDtmCs3pCHvQwnfkN9nIpgZW-g2EqNe7eOqFZLx6-FTEL0pHMHGv6EgzGvHwlKjx1yvctNK-BGdgzn2EHW_5i9H1KAt6r6GCGDjd86YOK9Acic2PH87anbvq-iThtQovMuLcULqr6n-v3dY9rvFVIXldsHWAdBmgeRP5_di5ttefIDF8O0egzDRvbst4is9719BCtHCa315T0zkE69-x68JPd3xy5MHR92oIbnCAE7oiPiZnhpV1IU1k35y2qdj8ipUscCh8L9849bkrP95d_4tyx2Zaqw-wMNd9rMEqZXrS4n7mhYdC1fHtYJTFxJsLwQ1uWDn_MmIodwB_T9RgBRzevYQZOPrdgTA1UuZSPEPG8tz_H_PdCJw5q51aIqhH0wfsqQtPgurgFuZHXhhKX2fGEr2m5NYg16msx2oaHlhcFV2vhWF_CETGi7j9jbtRKTJ-e4JRUkl-Pee7Sx2ocqIgT6m-oH3I_UPKcN_psoJRKsz6twmzd3uqdAu_2a0uv9uvyg_fEgWdZQZb7SARACexpb6tYgf0BCEYwC_-n7SFEkae6BJ5adjtu_-NPw70u91KmnJxOjh2A1JRHfLZaiCXAL6J_tZobbg0O0Yj4XUeMxen7ZLrtME-BTxJ86gMJD0pSct88d6M26pgQ4MIxqeUmUnf95uxn1C2FV_7mkobBDH0xL1uXaj6gj4kbwn1z_pDPFo-bdxYHE-2F9jc6CMZFu-o3yrq_1HwE5Tr1TeY_-BPe56_5xxiLnM-naHzYGjtPCS0bFNaXv4Fxmn4Eek6sjvDZbh4p6j4GPEjtK0-0VGghClC-QAyiVtFfb72dXgv84cgqnTnbawp-AE" charset="UTF-8"></script><style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .button {
+      display: inline-block;
+      background-color: #4a76a8;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 16px;
+    }
+    .container {
+      margin-top: 20px;
+    }
+    .code-box {
+      background-color: #f5f5f5;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 20px;
+      word-break: break-all;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Авторизация через VK ID</h1>
+  
+  <p>Эта страница поможет вам получить код авторизации для VK API без использования SDK.</p>
+  
+  <div class="container">
+    <a href="#" id="auth-link" class="button">Авторизоваться через VK</a>
+  </div>
+  
+  <div id="result" class="hidden">
+    <h2>Результат авторизации</h2>
+    <p>Код авторизации получен:</p>
+    <div id="auth-code" class="code-box"></div>
+    
+    <h3>Следующие шаги:</h3>
+    <ol>
+      <li>Скопируйте этот код</li>
+      <li>Используйте его для получения access_token через API запрос</li>
+      <li>Используйте access_token в вашем n8n воркфлоу</li>
+    </ol>
+  </div>
+  
+  <script>
+    // Конфигурация приложения
+    const clientId = '53635176'; // Ваш ID приложения
+    const redirectUri = 'https://vk.researcher123.space/auth.html';
+    const scope = 'video,offline';
+    
+    // Формируем URL для авторизации
+    const authUrl = `https://id.vk.com/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&response_type=code`;
+    
+    // Устанавливаем ссылку на кнопку
+    document.getElementById('auth-link').href = authUrl;
+    
+    // Функция для получения параметров из URL
+    function getUrlParameter(name) {
+      name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+      const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+      const results = regex.exec(location.search);
+      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+    
+    // Проверяем, есть ли код в URL после редиректа
+    const code = getUrlParameter('code');
+    if (code) {
+      // Показываем блок с результатом
+      document.getElementById('result').classList.remove('hidden');
+      
+      // Отображаем полученный код
+      document.getElementById('auth-code').textContent = code;
+      
+      // Скрываем кнопку авторизации
+      document.getElementById('auth-link').style.display = 'none';
+      
+      // Очищаем URL от параметров для безопасности
+      if (history.pushState) {
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+        window.history.pushState({path: newUrl}, '', newUrl);
+      }
+    }
+  </script>
+</body>
+</html>
