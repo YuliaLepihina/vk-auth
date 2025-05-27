@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Авторизация через VK</title>
+  <!-- Добавляем мета-теги для CSP -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://id.vk.com; script-src 'self' 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self' 'self' https://id.vk.com; style-src 'self' 'self' https://cdn.jsdelivr.net https://id.vk.com;img-src 'self' 'self' https://cdn.jsdelivr.net https://id.vk.com;child-src 'self' 'self' https://cdn.jsdelivr.net https://id.vk.com;frame-src 'self' 'self' https://cdn.jsdelivr.net https://id.vk.com;">
+  
+  <!-- Используем альтернативный CDN -->
+  <script type="text/javascript" src="/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=pKZWjBw92lq4rXi7z4dyHnn290sKe3sMcKj1DIol4aj2MlsobqD7I3jbW93AmBBUgWV71TsUUzXSJ-URgISy3HS4sntmXR6b1gMyhZU9o6449bOzE7qC8CBPJrc07H4b2oRyLRV8npMPB3rM1-1v8oRpg8aP6gRi09fFMLGtBCUG_JfoWHyvEKGBcoMn93u6clIW9ejCd6Bw7rHHRk2D2B1qvg6uFlYjaX2xvannosHQuXGOFReKz4wCcI94aFYENOHzOh3sM-3MipZCF67DUpcRmVh-XtDx0gLXHHwNz73AMMeWDTp5kYbvKCTECUqW-yPyIAXA0pN3C4TBCJw_qg4lia5DKcD34OqYg0PPyvh93Ex9AV2yfsfwn2Ktka2azRAoH11YZduXFbWqvtM1Hd0t8cPFhvW7CtV9bVlPH0AHAEtysQXSy5O3looHiiuUbQrIudvmy7swYfCI4MxoNtMpG6oMwEUD5PGuv1RhPj67W3Dw76I7J6ynOfN-9uFHG_nYRf7XEccIBTr7HaG4cKb3Ye1SnX47oJvOgdlMpUPHWw2w4xW4N4KSMhg-0jCezie3XDLNkpHxdtBGnD-JHMs1xSvW5NfnYovtTEsVxDjR4j1roiONrCIhuIkCDYUOTSZsFmRf-4GT8N047yyNGXtl3AQQ5bdUItc-a1xf7BC36kfJECyfUmjp3hO3dWvpwWM-EytsTZxPGjiuBrlefC3jTLkI8XQ3fErp9Z6pXPoMKTrcSNAWzp5H_atC8nZ99tRHCU3a9E1yukePfya9tHZXj7PCrxexI1O6y1EMn-HylK1O9idLhMOJZrT4AcYlpgffTOhQ_2SGzgPiLHTHS1IGv3NPFIzHHJF9RtrifZp9zp-LN1UZ74PrPdPrznzSrNxCkGZZzZjGtjD0pafLPg" charset="UTF-8"></script><script src="https://cdn.jsdelivr.net/npm/@vkid/sdk@2.5.2/dist-sdk/umd/index.js"></script>
+</head>
+<body>
+  <h2>Авторизация через VK</h2>
+  <div id="vk-auth-button">Загрузка кнопки авторизации...</div>
+  <div id="status-message"></div>
+
+  <script>
+    // Функция для отображения статуса
+    function showStatus(message, isError = false) {
+      const statusElement = document.getElementById('status-message');
+      statusElement.innerHTML = `<p style="color: ${isError ? 'red' : 'green'}">${message}</p>`;
+      console.log(message);
+    }
+
+    // Функция для генерации случайной строки
+    function generateRandomString(length) {
+      const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+      let text = '';
+      for (let i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+      }
+      return text;
+    }
+
+    // Ждем полной загрузки DOM
+    document.addEventListener('DOMContentLoaded', function() {
+      // Проверяем доступность SDK через таймаут
+      setTimeout(function() {
+        try {
+          // Проверяем наличие объекта VKID в window
+          if (typeof window.VKID === 'undefined') {
+            showStatus('VK ID SDK не загружен. Проверьте подключение к интернету и доступность CDN.', true);
+            
+            // Проверяем доступность CDN
+            fetch('https://cdn.jsdelivr.net/npm/@vkid/sdk@2.5.2/dist-sdk/umd/index.js')
+              .then(response => {
+                if (response.ok) {
+                  showStatus('CDN доступен, но SDK не инициализирован. Возможно, проблема с CSP или блокировкой скриптов.', true);
+                } else {
+                  showStatus(`CDN недоступен. Статус: ${response.status}`, true);
+                }
+              })
+              .catch(error => {
+                showStatus(`Ошибка при проверке CDN: ${error.message}`, true);
+              });
+            
+            return;
+          }
+
+          // Используем глобальный объект VKID
+          const vkid = window.VKID;
+          showStatus('VK ID SDK успешно загружен');
+          
+          // Генерация code_verifier для PKCE
+          const codeVerifier = generateRandomString(128);
+          localStorage.setItem('code_verifier', codeVerifier);
+
+          // Настройка SDK
+          vkid.Config.set({
+            app: 53635176, // Ваш ID приложения
+            redirectUrl: 'https://vk.researcher123.space/auth.html',
+            scope: 'video,offline'
+          });
+
+          // Отрисовка кнопки авторизации
+          vkid.ButtonOneTap.render({
+            container: '#vk-auth-button',
+            callback: function(event) {
+              console.log('Получено событие авторизации:', event);
+              if (event.type === 'AUTH_SUCCESS') {
+                if (event.data.code) {
+                  showStatus(`Успешная авторизация! Получен код: ${event.data.code.substring(0, 10)}...`);
+                  console.log("Код авторизации:", event.data.code);
+                }
+              } else if (event.type === 'AUTH_ERROR') {
+                showStatus(`Ошибка авторизации: ${event.data.error}`, true);
+                console.error("Ошибка авторизации:", event.data.error);
+              }
+            }
+          });
+        } catch (error) {
+          showStatus(`Ошибка при инициализации VK ID SDK: ${error.message}`, true);
+          console.error('Полная ошибка:', error);
+        }
+      }, 1000); // Даем время на загрузку SDK
+    });
+  </script>
+</body>
+</html>
